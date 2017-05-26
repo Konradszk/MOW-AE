@@ -27,6 +27,9 @@ library(doRNG)
 if (!"cec2103" %in% row.names(installed.packages()))
     install.packages("cec2013")
 library(cec2013)
+if (!"dbscan" %in% row.names(installed.packages()))
+    install.packages("dbscan")
+library(dbscan)
 
 #------------------------------------------------------------------------
 fx <- function(x)
@@ -76,11 +79,44 @@ GA50.kmed3 <- pam(GA50@population, 3, medoids = 3:1)
 GA50.kmed6 <- pam(GA50@population, 6, medoids = 6:1)
 GA50.kmed10 <- pam(GA50@population, 10, medoids = 10:1)
 
-#--------------------------
+#--------------------------AGNES-----------------
 
-#plot(hclust(dist(GA10@population), method = "complete"))
+GA10.agn.ave <- agnes(GA10@population, diss = FALSE, metric = "euclidean", method = "average")
+GA30.agn.sgl <- agnes(GA30@population, diss = FALSE, metric = "euclidean", method = "single")
+GA50.agn.cmpl <- agnes(GA50@population, diss = FALSE, metric = "euclidean", method = "complete")
 
-#plot(hclust(dist(GA10@population), method = "average"))
+GA10.agn.ave <- agnes(GA10@population, diss = FALSE, metric = "euclidean", method = "average")
+GA30.agn.sgl <- agnes(GA30@population, diss = FALSE, metric = "euclidean", method = "single")
+GA50.agn.cmpl <- agnes(GA50@population, diss = FALSE, metric = "euclidean", method = "complete")
 
-#plot(hclust(dist(GA10@population), method = "single"))
+GA10.agn.ave <- agnes(GA10@population, diss = FALSE, metric = "euclidean", method = "average")
+GA30.agn.sgl <- agnes(GA30@population, diss = FALSE, metric = "euclidean", method = "single")
+GA50.agn.cmpl <- agnes(GA50@population, diss = FALSE, metric = "euclidean", method = "complete")
 
+plot(GA10.agn.cmpl)
+
+#--------------------------HCLUST-----------------
+
+GA10.hcl.cmpl<-hclust(dist(GA10@population), method = "complete")
+GA10.hcl.avr <- hclust(dist(GA10@population), method = "average")
+GA10.hcl.sgl <- hclust(dist(GA10@population), method = "single")
+
+GA30.hcl.cmpl <- hclust(dist(GA30@population), method = "complete")
+GA30.hcl.avr <- hclust(dist(GA30@population), method = "average")
+GA30.hcl.sgl <- hclust(dist(GA30@population), method = "single")
+
+GA50.hcl.cmpl <- hclust(dist(GA50@population), method = "complete")
+GA50.hcl.avr <- hclust(dist(GA50@population), method = "average")
+GA50.hcl.sgl <- hclust(dist(GA50@population), method = "single")
+
+
+
+#--------------------------DBSCAN-----------------
+
+db <- dbscan(GA10@population, eps = 70, minPts =5)
+
+
+print(db)
+Summary(GA10)
+plot(GA10@population[,])
+ plot(db, GA10@population, main = "dbsan", frame = false)

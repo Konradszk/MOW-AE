@@ -12,20 +12,32 @@
 #func.num <- 8
 #D <- 10
 #plot(cec2013(func.num, rep(15, D)))
-
-
-fx <- function(x) {
-    return(cec2013(8, x))
-}
-GA10 <- ga(type = "real-valued", fitness = fx, min = rep(-100,10), max = rep(100,10), popSize = 100, seed = 1234, monitor = NULL, maxiter = 20)
+fx1 <- function(x) { return(cec2013(8, x))}
+GA10 <- ga(type = "real-valued",fitness = fx1, min = rep(-100, 10),  max = rep(100, 10),  popSize = 100,   seed = 1234, monitor = NULL, maxiter = 500)
 
 GA30 <- ga(type = "real-valued", fitness = fx, min = rep(-100, 30), max = rep(100, 30), popSize = 300, seed = 1234, monitor = NULL, maxiter = 30)
 
 GA50 <- ga(type = "real-valued", fitness = fx, min = rep(-100, 50), max = rep(100, 50), popSize = 500, seed = 1234, monitor = NULL, maxiter = 40)
 
 plot(GA10)
-plot(GA30)
-plot(GA50)
+#plot(GA30)
+#plot(GA50)
 summary(GA10)
-summary(GA30) 
+summary(GA30)
 summary(GA50)
+#library(ggplot2)
+#ggplot(GA10, aes(Petal.Length, Petal.Width, color = Species)) + geom_point()
+
+
+kmeans(GA10@population, 3, iter.max = 10, nstart = 10)
+
+kmeans(GA10@population, 5, iter.max = 10, nstart = 10)
+
+kmeans(GA10@population, 10, iter.max = 10, nstart = 20)
+
+plot(hclust(dist(GA10@population), method = "complete"))
+
+#plot(hclust(dist(GA10@population), method = "average"))
+
+plot(hclust(dist(GA10@population), method = "single"))
+

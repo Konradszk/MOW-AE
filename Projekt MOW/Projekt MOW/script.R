@@ -32,12 +32,39 @@ if (!"dbscan" %in% row.names(installed.packages()))
 library(dbscan)
 
 #------------------------------------------------------------------------
-fx <- function(x)
-     {
+fx <- function(x) {
     return(cec2013(8, x))
-     }
+}
+srednia_kmean <- function(GA, GA.size) {
+    sr <- rep(0, GA.size)
+    for (i in GA@popSize)
+        sr <- sr + GA@population[i,]
+    sr <- sr / GA.size
+    return(sr)
 
-GA10 <- ga(type = "real-valued",fitness = fx, min = rep(-100, 10),  max = rep(100, 10),  popSize = 100,   seed = 1234, monitor = NULL, maxiter = 100,pmutation = 0.1)
+}
+B_W_pam = function(pop, gpam) {
+    v.pred <- as.integer(gpam$clustering)
+    cls.attr <- cls.attrib(pop, v.pred)
+    center <- cls.attr$cluster.center
+    size <- cls.attr$cluster.size
+    mean <- cls.attr$mean
+
+    W.matrix <- wcls.matrix(pop, v.pred, center)
+    B.matrix <- bcls.matrix(center, size, mean)
+    sum(diag(B.matrix)) / sum(diag(W.matrix))
+}
+B_W_kmean = function(pop, gKmean, GAx, GAx.size) {
+    v.pred <- as.integer(gKmean$cluster)
+
+
+
+    W.matrix <- wcls.matrix(pop, v.pred, gKmean$center)
+    B.matrix <- bcls.matrix(gKmean$centers, gKmean$size, srednia_kmean(GAx, GAx.size))
+    sum(diag(B.matrix)) / sum(diag(W.matrix))
+}
+
+GA10 <- ga(type = "real-valued", fitness = fx, min = rep(-100, 10), max = rep(100, 10), popSize = 100, seed = 1234, monitor = NULL, maxiter = 100, pmutation = 0.1)
 
 GA30 <- ga(type = "real-valued", fitness = fx, min = rep(-100, 30), max = rep(100, 30), popSize = 300, seed = 1234, monitor = NULL, maxiter = 300, pmutation = 0.1)
 
@@ -60,15 +87,15 @@ write.table(format(GA50.data, digits = 2.0), file = "GA50population")
 
 
 
-GA10.km3<-kmeans(GA10@population, 3, iter.max = 100, nstart = 10) #klastry 3, iter 10, poczatkow 10 pkt 
+GA10.km3 <- kmeans(GA10@population, 3, iter.max = 100, nstart = 10) #klastry 3, iter 10, poczatkow 10 pkt 
 GA10.km6 <- kmeans(GA10@population, 6, iter.max = 100, nstart = 10)
 GA10.km10 <- kmeans(GA10@population, 10, iter.max = 100, nstart = 30)
 
-GA30.km3 <- kmeans(GA30@population, 3, iter.max = 100, nstart = 10)  
+GA30.km3 <- kmeans(GA30@population, 3, iter.max = 100, nstart = 10)
 GA30.km6 <- kmeans(GA30@population, 6, iter.max = 100, nstart = 10)
 GA30.km10 <- kmeans(GA30@population, 10, iter.max = 10, nstart = 20)
 
-GA50.km3 <- kmeans(GA50@population, 3, iter.max = 100, nstart = 10) 
+GA50.km3 <- kmeans(GA50@population, 3, iter.max = 100, nstart = 10)
 GA50.km6 <- kmeans(GA50@population, 6, iter.max = 100, nstart = 10)
 GA50.km10 <- kmeans(GA50@population, 10, iter.max = 10, nstart = 20)
 
@@ -105,7 +132,7 @@ GA50.agn.cmpl <- agnes(GA50@population, diss = FALSE, metric = "euclidean", meth
 
 #--------------------------HCLUST-----------------
 
-GA10.hcl.cmpl<-hclust(dist(GA10@population), method = "complete")
+GA10.hcl.cmpl <- hclust(dist(GA10@population), method = "complete")
 GA10.hcl.avr <- hclust(dist(GA10@population), method = "average")
 GA10.hcl.sgl <- hclust(dist(GA10@population), method = "single")
 
@@ -138,25 +165,15 @@ GA50.db <- fpc::dbscan(GA50@population, eps = 70, MinPts = 5)
 #GA10.km3$centers
 
 
-B_W = function(pop, gpam) {
-v.pred <- as.integer(gpam$clustering)
-cls.attr <- cls.attrib(pop, v.pred)
-center <- cls.attr$cluster.center
-size <- cls.attr$cluster.size
-mean <- cls.attr$mean
 
-W.matrix <- wcls.matrix(pop, v.pred, center)
-B.matrix <- bcls.matrix(center, size, mean)
-sum(diag(B.matrix)) / sum(diag(W.matrix))
-}
 B_W(GA50@population, GA50.kmed10)
 
 summary(GA10.kmed10)
 
 B_W(GA50@population, GA50)
 
+GA10.km3$iter
 
-bcls.matrix(GA50.km10$centers, GA50.km10$size, GA50.km10$)
 GA10.agn.ave$ac
 GA50.km10[4]
 cec2013(8, GA10.km10$centers[1,])
@@ -166,3 +183,12 @@ GA10.km10$withinss
 GA10.kmed10
 GA10.hcl.avr$
 GA10.db
+GA10.km3$iter
+
+GA50@population
+
+as.vector(GA50@solution)
+
+
+
+#B_W_kmean(GA10@population,GA10.km3,GA10,10 <----- przyladowe zuycie wazne!

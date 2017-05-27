@@ -72,7 +72,7 @@ GA50.km3 <- kmeans(GA50@population, 3, iter.max = 100, nstart = 10)
 GA50.km6 <- kmeans(GA50@population, 6, iter.max = 100, nstart = 10)
 GA50.km10 <- kmeans(GA50@population, 10, iter.max = 10, nstart = 20)
 
-plot(GA10@population, col = GA10.km10$centers)
+#plot(GA10@population, col = GA10.km10$centers)
 #--------------------KMEDOID--------------
 
 GA10.kmed3 <- pam(GA10@population, 3, medoids = 3:1)
@@ -90,8 +90,8 @@ GA50.kmed10 <- pam(GA50@population, 10, medoids = 10:1)
 #--------------------------AGNES-----------------
 
 GA10.agn.ave <- agnes(GA10@population, diss = FALSE, metric = "euclidean", method = "average")
-GA10.agn.sgl <- agnes(GA30@population, diss = FALSE, metric = "euclidean", method = "single")
-GA10.agn.cmpl <- agnes(GA50@population, diss = FALSE, metric = "euclidean", method = "complete")
+GA10.agn.sgl <- agnes(GA10@population, diss = FALSE, metric = "euclidean", method = "single")
+GA10.agn.cmpl <- agnes(GA10@population, diss = FALSE, metric = "euclidean", method = "complete")
 
 GA30.agn.ave <- agnes(GA30@population, diss = FALSE, metric = "euclidean", method = "average")
 GA30.agn.sgl <- agnes(GA30@population, diss = FALSE, metric = "euclidean", method = "single")
@@ -131,10 +131,38 @@ GA50.db <- fpc::dbscan(GA50@population, eps = 70, MinPts = 5)
 #----------------------------------------------------------------------------------------------------------------------------------------
 #--------------------------------------------------------------OCENIANIE----------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------------------------------
-w<-wcls.matrix(data = GA10@population,clust = GA10.km3$cluster,cluster.center = GA10.km3$centers)
-b <- bcls.matrix(mean = GA10.km3$withinss, clust = GA10.km3$cluster, cluster.center = GA10.km3$centers)
-bcls.matrix()
-ss = sum(diag(w))
-GA10.km3$centers
+#w<-wcls.matrix(data = GA10@population,clust = GA10.km3$cluster,cluster.center = GA10.km3$centers)
+#b <- bcls.matrix(mean = GA10.km3$withinss, clust = GA10.km3$cluster, cluster.center = GA10.km3$centers)
+#bcls.matrix()
+#ss <- sum(diag(w))
+#GA10.km3$centers
 
 
+B_W = function(pop, gpam) {
+v.pred <- as.integer(gpam$clustering)
+cls.attr <- cls.attrib(pop, v.pred)
+center <- cls.attr$cluster.center
+size <- cls.attr$cluster.size
+mean <- cls.attr$mean
+
+W.matrix <- wcls.matrix(pop, v.pred, center)
+B.matrix <- bcls.matrix(center, size, mean)
+sum(diag(B.matrix)) / sum(diag(W.matrix))
+}
+B_W(GA50@population, GA50.kmed10)
+
+summary(GA10.kmed10)
+
+B_W(GA50@population, GA50)
+
+
+bcls.matrix(GA50.km10$centers, GA50.km10$size, GA50.km10$)
+GA10.agn.ave$ac
+GA50.km10[4]
+cec2013(8, GA10.km10$centers[1,])
+summary(GA10.km10)
+summary(GA10.hcl.avr)
+GA10.km10$withinss
+GA10.kmed10
+GA10.hcl.avr$
+GA10.db

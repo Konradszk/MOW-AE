@@ -57,11 +57,37 @@ B_W_pam = function(pop, gpam) {
 B_W_kmean = function(pop, gKmean, GAx, GAx.size) {
     v.pred <- as.integer(gKmean$cluster)
 
-
-
     W.matrix <- wcls.matrix(pop, v.pred, gKmean$center)
     B.matrix <- bcls.matrix(gKmean$centers, gKmean$size, srednia_kmean(GAx, GAx.size))
     sum(diag(B.matrix)) / sum(diag(W.matrix))
+}
+silhouette_kmean <- function(gkmean, GAx) {
+    # Silhouette coefficient of observations
+    sil3 <- silhouette(gkmean$cluster, dist(GAx@population))
+    # Summary of silhouette analysis
+    si.sum <- summary(sil3)
+    # Average silhouette width of each cluster
+    si.sum$clus.avg.widths
+    #The total average(mean of all individual silhouette widths)
+    si.sum$avg.width
+
+    # The size of each clusters
+}
+B_W_dbscam_size <- function(db, GAx) {
+    n.clust <- max(db$cluster + 1)
+    n.in.clust <- rep(0, n.clust)
+    for (i in db$cluster)
+        n.in.clust[i + 1] <- n.in.clust[i + 1] + 1
+    return(n.in.clust[2:n.clust]) #zwraca bez szumu
+}
+B_W_dbscam_center <- function(db, GAx) { #trzeba uwzglednic szum bo WCV wymaga :(
+    n.clust <- max(db$cluster+1)
+    m.maatrix <- length(colMeans(GA10@population[GA10.db$cluster == n.clust-1,]))
+    A = matrix(nrow = n.clust, ncol = m.maatrix)
+    for (i in c(0:n.clust-1))
+        A[i+1,] = colMeans(GAx@population[db$cluster == i,])
+    return(A)
+
 }
 
 GA10 <- ga(type = "real-valued", fitness = fx, min = rep(-100, 10), max = rep(100, 10), popSize = 100, seed = 1234, monitor = NULL, maxiter = 100, pmutation = 0.1)
@@ -90,7 +116,7 @@ write.table(format(GA50.data, digits = 2.0), file = "GA50population")
 GA10.km3 <- kmeans(GA10@population, 3, iter.max = 100, nstart = 10) #klastry 3, iter 10, poczatkow 10 pkt 
 GA10.km6 <- kmeans(GA10@population, 6, iter.max = 100, nstart = 10)
 GA10.km10 <- kmeans(GA10@population, 10, iter.max = 100, nstart = 30)
-
+GA10.km30 <- kmeans(GA10@population, 30, iter.max = 100, nstart = 30)
 GA30.km3 <- kmeans(GA30@population, 3, iter.max = 100, nstart = 10)
 GA30.km6 <- kmeans(GA30@population, 6, iter.max = 100, nstart = 10)
 GA30.km10 <- kmeans(GA30@population, 10, iter.max = 10, nstart = 20)
@@ -189,6 +215,27 @@ GA50@population
 
 as.vector(GA50@solution)
 
+GA30.km3
 
-
+length(GA10.db$cluster)
+GA10.db$cluster
 #B_W_kmean(GA10@population,GA10.km3,GA10,10 <----- przyladowe zuycie wazne!
+#-----------------do kmenas ---- silhouette
+
+GA10.db
+B_W_dbscam(GA10.db,GA10)
+silhouette_kmean(GA10.km30, GA10)
+wc
+B_W_dbscam = function(db, GAx, GAx.size) {
+    v.pred <- as.integer(db$cluster)
+
+    W.matrix <- wcls.matrix(GAx@population, v.pred, as.data.frame.ts( db$cluster))
+    #B.matrix <- bcls.matrix(B_W_dbscam_center(db, GAx), B_W_dbscam_size(db,GAx), srednia_kmean(GAx, GAx.size))
+   #sum(diag(B.matrix)) / sum(diag(W.matrix))
+}
+B_W_dbscam(GA10.db, GA10, 10)
+B_W_kmean(GA10@population, GA10.km3, GA10, 10)
+as.vector(B_W_dbscam_center(GA10.db, GA10))
+GA10.db$cluster
+GA10.db$cluster
+GA10.km3$center

@@ -78,7 +78,7 @@ B_W_dbscam_size <- function(db, GAx) {
     n.in.clust <- rep(0, n.clust)
     for (i in db$cluster)
         n.in.clust[i + 1] <- n.in.clust[i + 1] + 1
-    return(n.in.clust[2:n.clust]) #zwraca bez szumu
+    return(n.in.clust[1:n.clust]) #zwraca z szukem {1:n}, bez {2:n}
 }
 B_W_dbscam_center <- function(db, GAx) { #trzeba uwzglednic szum bo WCV wymaga :(
     n.clust <- max(db$cluster+1)
@@ -192,16 +192,13 @@ GA50.db <- fpc::dbscan(GA50@population, eps = 70, MinPts = 5)
 
 
 
-B_W(GA50@population, GA50.kmed10)
+#B_W(GA50@population, GA50.kmed10)
 
 summary(GA10.kmed10)
 
-B_W(GA50@population, GA50)
+#B_W(GA50@population, GA50)
 
-GA10.km3$iter
 
-GA10.agn.ave$ac
-GA50.km10[4]
 cec2013(8, GA10.km10$centers[1,])
 summary(GA10.km10)
 summary(GA10.hcl.avr)
@@ -211,7 +208,7 @@ GA10.hcl.avr$
 GA10.db
 GA10.km3$iter
 
-GA50@population
+
 
 as.vector(GA50@solution)
 
@@ -222,20 +219,23 @@ GA10.db$cluster
 #B_W_kmean(GA10@population,GA10.km3,GA10,10 <----- przyladowe zuycie wazne!
 #-----------------do kmenas ---- silhouette
 
-GA10.db
-B_W_dbscam(GA10.db,GA10)
-silhouette_kmean(GA10.km30, GA10)
-wc
-B_W_dbscam = function(db, GAx, GAx.size) {
-    v.pred <- as.integer(db$cluster)
 
-    W.matrix <- wcls.matrix(GAx@population, v.pred, as.data.frame.ts( db$cluster))
-    #B.matrix <- bcls.matrix(B_W_dbscam_center(db, GAx), B_W_dbscam_size(db,GAx), srednia_kmean(GAx, GAx.size))
-   #sum(diag(B.matrix)) / sum(diag(W.matrix))
+silhouette_kmean(GA10.km30, GA10)
+
+B_W_dbscam = function(db, GAx, GAx.size) {
+    v.pred <- as.integer(db$cluster+1)
+    
+    W.matrix <- wcls.matrix(GAx@population, v.pred, B_W_dbscam_center(GA10.db, GA10))
+    B.matrix <- bcls.matrix(B_W_dbscam_center(db, GAx), B_W_dbscam_size(db,GAx), srednia_kmean(GAx, GAx.size))
+   return( sum(diag(B.matrix)) / sum(diag(W.matrix)))
+   
 }
 B_W_dbscam(GA10.db, GA10, 10)
 B_W_kmean(GA10@population, GA10.km3, GA10, 10)
-as.vector(B_W_dbscam_center(GA10.db, GA10))
-GA10.db$cluster
-GA10.db$cluster
+(B_W_dbscam_center(GA10.db, GA10))
+typeof(GA10.km3$center[,])
 GA10.km3$center
+GA10.km3$center
+A<-as.integer(GA10.db$cluster)
+A + 1
+B_W_dbscam_size(GA10.db, GA10)

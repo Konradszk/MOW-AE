@@ -43,8 +43,8 @@ srednia_kmean <- function(GAx, GA.size) {
     for (i in 1:GAx@popSize)
         sr <- sr + GAx@population[i,]
     sr <- sr / GAx@popSize
-    return(sr)
 
+  return(sr)
 }
 srednia_dbscam <- function(pop_matrix) {
     sr <- vector(length = length(pop_matrix[1,]), mode = "integer")
@@ -119,10 +119,10 @@ B_W_dbscam_pop <- function(pop, cluster, sizePop) {
 B_W_dbscam = function(db, GAx, GAx.size) {
     v.pred <- as.integer(B_W_dbscam_clust(db$clust))
 
-    W.matrix <- wcls.matrix(B_W_dbscam_pop(GAx@population, db$cluster, GAx.size), v.pred, B_W_dbscam_center(GA10.db, GA10))
+    W.matrix <- wcls.matrix(B_W_dbscam_pop(GAx@population, db$cluster, GAx.size), v.pred, B_W_dbscam_center(db, GAx))
     B.matrix <- bcls.matrix(B_W_dbscam_center(db, GAx), B_W_dbscam_size(db, GAx), srednia_dbscam(B_W_dbscam_pop(GAx@population, db$cluster, GAx.size)))
-    return(sum(diag(B.matrix)) / sum(diag(W.matrix)))
-
+   return(sum(diag(B.matrix)) / sum(diag(W.matrix)))
+   
 
 }
 
@@ -141,6 +141,148 @@ B_W_dbscam_clust <- function(cluster) {
     }
 
     return(v)
+}
+Own_valuate_pam <- function(gpam) {
+    v_clust <- gpam$clustering
+    n_clust <- max(gpam$clustering)
+    v_return <- vector(length = n_clust)
+    for (i in 1:n_clust) {
+        n_rows <- 0
+        actual_row <- 1
+        best_val <- 0
+        for (j in 1:length(gpam$clustering))
+            if (i == v_clust[j]) { n_rows <- n_rows + 1 }
+
+        ma <- matrix(ncol = length(gpam$data[1,]), nrow = n_rows)
+
+        for (k in 1:length(gpam$clustering)) {
+            if (i == v_clust[k]) {
+                ma[actual_row,] <- gpam$data[k,]
+                actual_row <- actual_row + 1
+            }
+
+        }
+        for (m in 1:n_rows) {
+
+            if (best_val > fx(ma[m, ])) {
+
+
+                best_val <- fx(ma[m,])
+            }
+        }
+
+        if (best_val >= fx(gpam$medoids[i, ])) { v_return[i] <- TRUE }
+
+    }
+    return(v_return)
+}
+
+Own_valuate_kmeans <- function(gkeams, pop) {
+    v_clust <- gkeams$cluster
+    n_clust <- max(gkeams$cluster)
+    cls.attr <- cls.attrib(pop, as.integer(gkeams$cluster))
+    v_return <- vector(length = n_clust)
+    for (i in 1:n_clust) {
+        n_rows <- 0
+        actual_row <- 1
+        best_val <- 0
+        for (j in 1:length(gkeams$cluster))
+            if (i == v_clust[j]) { n_rows <- n_rows + 1 }
+
+        ma <- matrix(ncol = length(pop[1,]), nrow = n_rows)
+
+        for (k in 1:length(gkeams$cluster)) {
+            if (i == v_clust[k]) {
+                ma[actual_row,] <- pop[k,]
+                actual_row <- actual_row + 1
+            }
+
+        }
+        for (m in 1:n_rows) {
+
+            if (best_val > fx(ma[m, ])) {
+
+
+                best_val <- fx(ma[m,])
+            }
+        }
+
+        if (best_val >= fx(cls.attr$cluster.center[i, ])) { v_return[i] <- TRUE }
+
+    }
+    return(v_return)
+}
+Own_valuate_dbscam <- function(db, GAx) {
+    v_clust <- B_W_dbscam_clust(db$cluster)
+    n_clust <- max(db$cluster)
+    pop <- B_W_dbscam_pop(GAx@population, v_clust, length(GAx@solution))
+    cls.attr <- cls.attrib(pop, as.integer(v_clust))
+    v_return <- vector(length = n_clust)
+    for (i in 1:n_clust) {
+        n_rows <- 0
+        actual_row <- 1
+        best_val <- 0
+        for (j in 1:length(v_clust))
+            if (i == v_clust[j]) { n_rows <- n_rows + 1 }
+
+        ma <- matrix(ncol = length(pop[1,]), nrow = n_rows)
+
+        for (k in 1:length(v_clust)) {
+            if (i == v_clust[k]) {
+                ma[actual_row,] <- pop[k,]
+                actual_row <- actual_row + 1
+            }
+
+        }
+        for (m in 1:n_rows) {
+
+            if (best_val > fx(ma[m, ])) {
+
+
+                best_val <- fx(ma[m,])
+            }
+        }
+
+        if (best_val >= fx(cls.attr$cluster.center[i, ])) { v_return[i] <- TRUE }
+
+    }
+    return(v_return)
+}
+Own_valuate_tree <- function(tree, GAx, kcut) {
+    v_clust <- cutree(tree, kcut)
+    n_clust <- max(v_clust)
+    pop <- GAx@population
+    cls.attr <- cls.attrib(pop, as.integer(v_clust))
+    v_return <- vector(length = n_clust)
+    for (i in 1:n_clust) {
+        n_rows <- 0
+        actual_row <- 1
+        best_val <- 0
+        for (j in 1:length(v_clust))
+            if (i == v_clust[j]) { n_rows <- n_rows + 1 }
+
+        ma <- matrix(ncol = length(pop[1,]), nrow = n_rows)
+
+        for (k in 1:length(v_clust)) {
+            if (i == v_clust[k]) {
+                ma[actual_row,] <- pop[k,]
+                actual_row <- actual_row + 1
+            }
+
+        }
+        for (m in 1:n_rows) {
+
+            if (best_val > fx(ma[m, ])) {
+
+
+                best_val <- fx(ma[m,])
+            }
+        }
+
+        if (best_val >= fx(cls.attr$cluster.center[i, ])) { v_return[i] <- TRUE }
+
+    }
+    return(v_return)
 }
 
 GA10 <- ga(type = "real-valued", fitness = fx, min = rep(-100, 10), max = rep(100, 10), popSize = 100, seed = 1234, monitor = NULL, maxiter = 100, pmutation = 0.1)
@@ -188,6 +330,7 @@ GA10.kmed10 <- pam(GA10@population, 10, medoids = 10:1)
 GA30.kmed3 <- pam(GA30@population, 3, medoids = 3:1)
 GA30.kmed6 <- pam(GA30@population, 6, medoids = 6:1)
 GA30.kmed10 <- pam(GA30@population, 10, medoids = 10:1)
+GA30.kmed1 <- pam(GA30@population,1,medoids = 1:1)
 
 GA50.kmed3 <- pam(GA50@population, 3, medoids = 3:1)
 GA50.kmed6 <- pam(GA50@population, 6, medoids = 6:1)
@@ -264,11 +407,13 @@ GA50.db <- fpc::dbscan(GA50@population, eps = 70, MinPts = 5)
 #-----------------do kmenas ---- silhouette
 
 
-silhouette_kmean(GA10.km30, GA10)
+silhouette_kmean(GA10.km3, GA10)
 
 
-B_W_dbscam(GA10.db, GA10, 10)
-B_W_kmean(GA10@population, GA10.km3, GA10, 10)
+B_W_dbscam(GA30.db, GA30, 30)
+B_W_kmean(GA30@population, GA30.km3, GA30, 30)
+B_W_pam(GA10@population,GA10.kmed10)
+summary(GA10.kmed10)
 (B_W_dbscam_center(GA10.db, GA10))
 typeof(GA10.km3$center[,])
 GA10.km3$center
@@ -278,3 +423,9 @@ A + 1
 B_W_dbscam_size(GA10.db, GA10)
 B_W_dbscam_center(GA10.db, GA10)
 
+
+Own_valuate_pam(GA50.kmed6)
+Own_valuate_dbscam(GA50.db, GA50)
+
+
+Own_valuate_tree(GA10.hcl.cmpl, GA10,95)

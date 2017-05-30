@@ -30,18 +30,29 @@ library(cec2013)
 if (!"dbscan" %in% row.names(installed.packages()))
     install.packages("dbscan")
 library(dbscan)
+if (!"clv" %in% row.names(installed.packages()))
+    install.packages("clv")
+library(clv)
 
 #------------------------------------------------------------------------
 fx <- function(x) {
     return(cec2013(8, x))
 }
-srednia_kmean <- function(GA, GA.size) {
+srednia_kmean <- function(GAx, GA.size) {
     sr <- rep(0, GA.size)
-    for (i in GA@popSize)
-        sr <- sr + GA@population[i,]
-    sr <- sr / GA.size
+    for (i in 1:GAx@popSize)
+        sr <- sr + GAx@population[i,]
+    sr <- sr / GAx@popSize
     return(sr)
 
+}
+srednia_dbscam <- function(pop_matrix) {
+    sr <- vector(length = length(pop_matrix[1,]), mode = "integer")
+    for (i in 1:length(pop_matrix[, 1]))
+        sr <- sr + pop_matrix[i,]
+
+    sr <- sr / length(pop_matrix[, 1])
+    return(sr)
 }
 B_W_pam = function(pop, gpam) {
     v.pred <- as.integer(gpam$clustering)
@@ -78,16 +89,58 @@ B_W_dbscam_size <- function(db, GAx) {
     n.in.clust <- rep(0, n.clust)
     for (i in db$cluster)
         n.in.clust[i + 1] <- n.in.clust[i + 1] + 1
-    return(n.in.clust[1:n.clust]) #zwraca z szukem {1:n}, bez {2:n}
+    return(n.in.clust[2:n.clust]) #zwraca z szukem {1:n}, bez {2:n}
 }
 B_W_dbscam_center <- function(db, GAx) { #trzeba uwzglednic szum bo WCV wymaga :(
-    n.clust <- max(db$cluster+1)
-    m.maatrix <- length(colMeans(GA10@population[GA10.db$cluster == n.clust-1,]))
+    n.clust <- max(db$cluster)
+    m.maatrix <- length(colMeans(GAx@population[db$cluster == n.clust,]))
     A = matrix(nrow = n.clust, ncol = m.maatrix)
-    for (i in c(0:n.clust-1))
-        A[i+1,] = colMeans(GAx@population[db$cluster == i,])
+    for (i in c(0:(n.clust-1)))
+        A[i+1,] = colMeans(GAx@population[db$cluster == i+1,])
     return(A)
 
+}
+B_W_dbscam_pop <- function(pop, cluster, sizePop) {
+    N <- 0
+    for (i in cluster)
+        if (i > 0) { N <- N + 1 }
+
+    M <- matrix(ncol = sizePop, nrow = N)
+    j <- 1
+    for (i in 1:length(cluster)) {
+
+        if (cluster[i] > 0) {
+            M[j,] = pop[i,]
+            j <- j + 1
+        }
+    }
+    return(M)
+}
+B_W_dbscam = function(db, GAx, GAx.size) {
+    v.pred <- as.integer(B_W_dbscam_clust(db$clust))
+
+    W.matrix <- wcls.matrix(B_W_dbscam_pop(GAx@population, db$cluster, GAx.size), v.pred, B_W_dbscam_center(GA10.db, GA10))
+    B.matrix <- bcls.matrix(B_W_dbscam_center(db, GAx), B_W_dbscam_size(db, GAx), srednia_dbscam(B_W_dbscam_pop(GAx@population, db$cluster, GAx.size)))
+    return(sum(diag(B.matrix)) / sum(diag(W.matrix)))
+
+
+}
+
+B_W_dbscam_clust <- function(cluster) {
+    N <- 0
+    for (i in cluster)
+        if (i > 0) { N <- N + 1 }
+
+    j <- 1
+    v <- vector(length = N, mode = "integer")
+    for (i in 1:length(cluster)) {
+        if (cluster[i] > 0) {
+            v[j] <- cluster[i]
+            j <- j + 1
+        }
+    }
+
+    return(v)
 }
 
 GA10 <- ga(type = "real-valued", fitness = fx, min = rep(-100, 10), max = rep(100, 10), popSize = 100, seed = 1234, monitor = NULL, maxiter = 100, pmutation = 0.1)
@@ -194,42 +247,26 @@ GA50.db <- fpc::dbscan(GA50@population, eps = 70, MinPts = 5)
 
 #B_W(GA50@population, GA50.kmed10)
 
-summary(GA10.kmed10)
 
 #B_W(GA50@population, GA50)
 
 
-cec2013(8, GA10.km10$centers[1,])
-summary(GA10.km10)
-summary(GA10.hcl.avr)
-GA10.km10$withinss
-GA10.kmed10
-GA10.hcl.avr$
-GA10.db
-GA10.km3$iter
 
 
 
-as.vector(GA50@solution)
 
-GA30.km3
 
-length(GA10.db$cluster)
-GA10.db$cluster
+
+
+
+
 #B_W_kmean(GA10@population,GA10.km3,GA10,10 <----- przyladowe zuycie wazne!
 #-----------------do kmenas ---- silhouette
 
 
 silhouette_kmean(GA10.km30, GA10)
 
-B_W_dbscam = function(db, GAx, GAx.size) {
-    v.pred <- as.integer(db$cluster+1)
-    
-    W.matrix <- wcls.matrix(GAx@population, v.pred, B_W_dbscam_center(GA10.db, GA10))
-    B.matrix <- bcls.matrix(B_W_dbscam_center(db, GAx), B_W_dbscam_size(db,GAx), srednia_kmean(GAx, GAx.size))
-   return( sum(diag(B.matrix)) / sum(diag(W.matrix)))
-   
-}
+
 B_W_dbscam(GA10.db, GA10, 10)
 B_W_kmean(GA10@population, GA10.km3, GA10, 10)
 (B_W_dbscam_center(GA10.db, GA10))
@@ -239,3 +276,5 @@ GA10.km3$center
 A<-as.integer(GA10.db$cluster)
 A + 1
 B_W_dbscam_size(GA10.db, GA10)
+B_W_dbscam_center(GA10.db, GA10)
+

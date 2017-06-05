@@ -142,6 +142,17 @@ B_W_dbscam_clust <- function(cluster) {
 
     return(v)
 }
+B_W_tree <- function(tree, GAx, kcut) {
+
+    v_clust <- cutree(tree, kcut)
+    pop <- GAx@population
+    cls.attr <- cls.attrib(pop, as.integer(v_clust))
+
+    W.matrix <- wcls.matrix(pop, v_clust, cls.attr$cluster.center)
+    B.matrix <- bcls.matrix(cls.attr$cluster.center, cls.attr$cluster.size, cls.attr$mean)
+    sum(diag(B.matrix)) / sum(diag(W.matrix))
+
+}
 Own_valuate_pam <- function(gpam) {
     v_clust <- gpam$clustering
     n_clust <- max(gpam$clustering)
@@ -370,11 +381,11 @@ GA50.hcl.sgl <- hclust(dist(GA50@population), method = "single")
 
 #--------------------------DBSCAN-----------------
 
-GA10.db <- fpc::dbscan(GA10@population, eps = 50, MinPts = 5)
+GA10.db <- dbscan(GA10@population, eps = 50, minPts = 5)
 
-GA30.db <- fpc::dbscan(GA30@population, eps = 70, MinPts = 5)
+GA30.db <- dbscan(GA30@population, eps = 70, minPts = 5)
 
-GA50.db <- fpc::dbscan(GA50@population, eps = 70, MinPts = 5)
+GA50.db <- dbscan(GA50@population, eps = 70, minPts = 5)
 
 
 #----------------------------------------------------------------------------------------------------------------------------------------
@@ -428,4 +439,5 @@ Own_valuate_pam(GA50.kmed6)
 Own_valuate_dbscam(GA50.db, GA50)
 
 
-Own_valuate_tree(GA10.hcl.cmpl, GA10,95)
+Own_valuate_tree(GA10.hcl.cmpl, GA10, 95)
+
